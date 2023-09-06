@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox, QComboBox, QTableWidgetItem,
     QTabWidget, QPushButton, QWidget, QMessageBox,
     QLabel, QScrollArea, QVBoxLayout, QHBoxLayout,
-    QStackedWidget
+    QStackedWidget, QLineEdit
 )
 from PyQt6.QtGui import QAction, QCloseEvent, QImage, QPixmap, QMouseEvent
 from PyQt6.QtCore import Qt, QThreadPool, pyqtSignal, QEvent
@@ -48,6 +48,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #Choose Button
         self.chooseButton = self.findChild(QPushButton, "chooseButton")
         self.chooseButton.clicked.connect(self.chooseButton_clicked)
+        #Label
+        self.nameLabel = self.findChild(QLabel, "nameLabel")
+        #QLineEdit
+        self.xValue = self.findChild(QLineEdit, "xValue")
+        self.yValue = self.findChild(QLineEdit, "yValue")
+        self.pixelValue = self.findChild(QLineEdit, "pixelValue")
+        self.xValue.setReadOnly(True)
+        self.yValue.setReadOnly(True)
+        self.pixelValue.setReadOnly(True)
         #Button
         #Up
         self.upButton = self.findChild(QPushButton, "upButton")
@@ -128,8 +137,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # img = cv2.imread(path, cv2.IMREAD_COLOR)
             file = os.path.basename(path)
             file_name = os.path.splitext(file)
-            MainWindow.customImg.update({file_name[0]: img})
-        MainWindow.key = file_name[0]
+            file_name ="0" + str(int(file_name[0])-1)
+            MainWindow.customImg.update({file_name: img})
+        MainWindow.key = file_name
         self.refeshImage()
         self.set_layout()
     def Save(self):
@@ -158,8 +168,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             image, cutImage = cropImage(image, self.x1, self.y2, self.x2, self.y1)
             cutImage = cv2.resize(cutImage, dsize=(255, 255), interpolation=cv2.INTER_AREA)
             self.cutImageWidget.set_image(cutImage)
+            self.xValue.setText(str(self.x1))
+            self.yValue.setText(str(self.y2))
+            self.pixelValue.setText(str(self.x2-self.x1))
         image = cv2.resize(image, None, fx=2.1, fy=2.1, interpolation=cv2.INTER_AREA)
         self.imgWidget.set_image(image)
+        self.nameLabel.setText(MainWindow.key)
     def set_layout(self):
         keys = MainWindow.customImg.keys()
         # Create a QVBoxLayout to hold the labels
@@ -186,6 +200,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def autofindButton_clicked(self):
         self.x1, self.y1, self.x2, self.y2 = HoughCirclesImg(MainWindow.customImg[MainWindow.key])
         self.findImage_check = True
+        self.xValue.setReadOnly(False)
+        self.yValue.setReadOnly(False)
+        self.pixelValue.setReadOnly(False)
         self.refeshImage()
     def clear(self):
         # Get the QScrollArea's container widget
@@ -199,11 +216,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     widget.deleteLater()
             MainWindow.customImg.clear()
             MainWindow.key = ""
-        self.findImage_check = False
+        # self.findImage_check = False
         self.chooseButton_checked = False
+        
     def chooseButton_clicked(self):
+        buttonText = ["Enlarge ", "Shrink"]
         self.current_layout_index = 1 - self.current_layout_index  # Toggle between 0 and 1
         self.stackedWidget.setCurrentIndex(self.current_layout_index)
+        self.chooseButton.setText(buttonText[self.current_layout_index])
     def upButonButton_clicked(self):
         self.y2 -= 1;self.y1 -= 1
         self.refeshImage()
@@ -229,7 +249,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.y1 += 1;self.x2 += 1
         self.refeshImage()
     def upleftButonButton_2_clicked(self):
-        self.y2 += 1;self.x1 -= 1
+        self.y2 += 1;self.x1 += 1
         self.refeshImage()
     def uprightButonButton_2_clicked(self):
         self.y2 += 1;self.x2 -= 1
@@ -238,7 +258,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.y1 -= 1;self.x1 += 1
         self.refeshImage()
     def downrightButonButton_2_clicked(self):
-        self.y1 -= 1;self.x2 += 1
+        self.y1 -= 1;self.x2 -= 1
         self.refeshImage()
     def cv2_to_qimage(self, cv_image):
         height, width, channels = cv_image.shape
