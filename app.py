@@ -121,8 +121,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                         BMP Images (*.bmp);;TIFF Images (*.tiff);;
                                                         WebP Images (*.webp);;Icon Images (*.ico)
                                                         """)[0]
+        
         for path in paths:
-            img = cv2.imread(path, cv2.IMREAD_COLOR)
+            raw_data = np.fromfile(path, dtype=np.uint8)
+            img = cv2.imdecode(raw_data, cv2.IMREAD_COLOR)
+            # img = cv2.imread(path, cv2.IMREAD_COLOR)
             file = os.path.basename(path)
             file_name = os.path.splitext(file)
             MainWindow.customImg.update({file_name[0]: img})
@@ -140,6 +143,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             image = MainWindow.customImg[key][self.y2:self.y1, self.x1:self.x2]
             file_name = self.dir+ "/" + key + ".JPG"
             cv2.imwrite(file_name, image)
+            print(self.x1, self.x2, self.y1, self.y2)
     def SaveAs(self):
         self.dir = QFileDialog.getExistingDirectory(self,
                                                     caption = "Open Directory"
