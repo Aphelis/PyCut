@@ -23,6 +23,14 @@ def HoughCirclesImg(img):
     if len(circles[0]) == 1:
         x, y, r = circles[0][0]
     return x-r, y+r, x+r, y-r
+def lowContrastImg(img, contrast):
+    matrix1 = np.ones(img.shape) * contrast
+    img_lower   = np.uint8(cv2.multiply(np.float64(img), matrix1))
+    return img_lower
+def highContrastImg(img, contrast):
+    matrix2 = np.ones(img.shape) * contrast
+    img_higher  = np.uint8(np.clip(cv2.multiply(np.float64(img), matrix2),0,255))
+    return img_higher
 def cropImage(img:np.ndarray, x1:int, y1:int, x2:int, y2:int)->np.ndarray:
     """
     Interference Image
@@ -39,10 +47,10 @@ def cropImage(img:np.ndarray, x1:int, y1:int, x2:int, y2:int)->np.ndarray:
     darkened_image[y1:y2, x1:x2] = img[y1:y2, x1:x2]
     return darkened_image, img[y1:y2, x1:x2]
 if __name__ == "__main__":
-    img = cv2.imread('image/11.JPG', 1)
+    img = cv2.imread('image/011.JPG', cv2.IMREAD_COLOR)
     x1, y1, x2, y2 = HoughCirclesImg(img)
     darkened_image, _ = cropImage(img, x1, y1, x2, y2)
-    plt.subplot(121),plt.imshow(bilateralFilterImg(img)),plt.title('bilateralFilter')
+    plt.subplot(121),plt.imshow(cv2.cvtColor(bilateralFilterImg(img), cv2.COLOR_BGR2RGB)),plt.title('bilateralFilter')
     # plt.subplot(132),plt.imshow(circleImg),plt.title("circleImg")
     plt.subplot(122),plt.imshow(darkened_image),plt.title("darkened_image")
     plt.xticks([]), plt.yticks([])
