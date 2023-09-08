@@ -1,0 +1,2 @@
+python -m PyInstaller --window --icon=icon\crop.ico  app.py
+('uic','uic'), ('documents','documents'), ('icon','icon'), ("module", "module")

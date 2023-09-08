@@ -2,6 +2,7 @@ import sys
 import os
 import cv2
 import numpy as np
+import webbrowser
 from PyQt6.QtWidgets import (
     QMainWindow, QApplication, QFileDialog, QTableWidget,
     QDialogButtonBox, QComboBox, QTableWidgetItem,
@@ -21,6 +22,14 @@ from ImageWidget import ImageWidget
 from module.image_processing import *
 from module.TableModel import TableModel
 
+basedir = os.path.dirname(__file__)
+
+try:
+    from ctypes import windll  # Only exists on Windows.
+    myappid = 'mycompany.myproduct.subproduct.version'
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 Ui_MainWindow, QtBaseClass = uic.loadUiType("uic/mainwindow.ui")
 class MainWindow(QMainWindow, Ui_MainWindow):
     customImg = {}
@@ -135,12 +144,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.menuSaveAs.setEnabled(False)
         #Help
         self.menuSOP = self.findChild(QAction, "menuSOP")
+        self.menuSOP.triggered.connect(self.SOP)
     def Open(self):
         try:
             
             paths = QFileDialog.getOpenFileNames(self, 
                                                 caption="Open Picture...",
-                                                directory= r"./image" , 
                                                 filter = """All(*.*);;PNG Images (*.png);;
                                                             PNG Images (*.png);;BMP Images (*.bmp);;
                                                             BMP Images (*.bmp);;TIFF Images (*.tiff);;
@@ -184,6 +193,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                     )
         
         self.Save()
+    def SOP(self):
+        webbrowser.open_new(r'documents\SOP.pdf')
     def refeshImage(self):
         try:
             if not self.findImage_check:
