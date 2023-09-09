@@ -4,19 +4,14 @@ import cv2
 import numpy as np
 import webbrowser
 from PyQt6.QtWidgets import (
-    QMainWindow, QApplication, QFileDialog, QTableWidget,
-    QDialogButtonBox, QComboBox, QTableWidgetItem,
-    QTabWidget, QPushButton, QWidget, QMessageBox,
-    QLabel, QScrollArea, QVBoxLayout, QHBoxLayout,
+    QMainWindow, QApplication, QFileDialog,
+     QPushButton, QWidget, 
+    QLabel, QScrollArea,  QHBoxLayout,
     QStackedWidget, QLineEdit, QTableView, QSlider,
     QDoubleSpinBox
 )
-from PyQt6.QtGui import QAction, QCloseEvent, QImage, QPixmap, QMouseEvent
-from PyQt6.QtCore import Qt, QThreadPool, pyqtSignal, QEvent
-
-from PyQt6 import uic, QtWidgets, QtCore, QtGui
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from module.Worker import Worker
+from PyQt6.QtGui import QAction, QCloseEvent, QImage, QPixmap
+from PyQt6 import uic,  QtCore
 from module.ClickableLabel import ClickableLabel
 from ImageWidget import ImageWidget
 from module.image_processing import *
