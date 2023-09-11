@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QStackedWidget, QLineEdit, QTableView, QSlider,
     QDoubleSpinBox
 )
-from PyQt6.QtGui import QAction, QCloseEvent, QImage, QPixmap
+from PyQt6.QtGui import QAction, QCloseEvent, QImage, QPixmap, QGuiApplication
 from PyQt6 import uic,  QtCore
 from module.ClickableLabel import ClickableLabel
 from ImageWidget import ImageWidget
@@ -25,15 +25,19 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
-Ui_MainWindow, QtBaseClass = uic.loadUiType("uic/mainwindow.ui")
-class MainWindow(QMainWindow, Ui_MainWindow):
+
+class MainWindow(QMainWindow):
     customImg = {}
     key = ""
     showImg = None
     def __init__(self):
-        QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
-        self.setupUi(self)
+        super(MainWindow, self).__init__()
+        screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
+        rect_height = screen_geometry.height()
+        if rect_height > 700:
+            uic.loadUi("uic/mainwindow_large.ui", self)
+        else:
+            uic.loadUi("uic/mainwindow_small.ui", self)
         self.setWindowTitle("PiCut")
         #Image Widget
         self.imgWidget = self.findChild(ImageWidget, "ImageWidget")
@@ -47,8 +51,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.findImage_check = False
         self.current_layout_index = 0
         #scrollArea
-        self.scrollArea = self.findChild(QScrollArea, "scrollArea")
-        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea1 = self.findChild(QScrollArea, "scrollArea")
+        self.scrollArea1.setWidgetResizable(True)
         #Table
         self.table = self.findChild(QTableView, "tableView")
         #Slider
@@ -140,31 +144,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #Help
         self.menuSOP = self.findChild(QAction, "menuSOP")
         self.menuSOP.triggered.connect(self.SOP)
-    def Open(self):
-        try:
-            
+    def Open(self):  
+            imgFileExtension = [".png", ".bmp", ".tiff", ".webp", ".ico", ".jpg", ".jpeg", ".gif", ".eps", ".svg"]
             paths = QFileDialog.getOpenFileNames(self, 
                                                 caption="Open Picture...",
-                                                filter = """All(*.*);;PNG Images (*.png);;
-                                                            PNG Images (*.png);;BMP Images (*.bmp);;
+                                                directory="image/",
+                                                filter = """All(*.*);;JPEG Images (*.jpg);; JPEG Images (*.jpeg)
+                                                            PNG Images (*.png);;EPS Images (*.eps);; SVG Images (*.svg)
                                                             BMP Images (*.bmp);;TIFF Images (*.tiff);;
                                                             WebP Images (*.webp);;Icon Images (*.ico)
                                                             """)[0]
+            print(bool(paths))
+            print(paths)
             if paths: #Check paths is not None
                 self.clear()
             for path in paths:
-                raw_data = np.fromfile(path, dtype=np.uint8)
-                img = cv2.imdecode(raw_data, cv2.IMREAD_COLOR)
-                # img = cv2.imread(path, cv2.IMREAD_COLOR)
-                file = os.path.basename(path)
-                file_name = os.path.splitext(file)
-                file_name ="0" + str(int(file_name[0])-1)
-                MainWindow.customImg.update({file_name: img})
+                    file = os.path.basename(path)
+                    file_name = os.path.splitext(file)
+                    if file_name[1].lower() not in imgFileExtension:
+                        continue
+                    raw_data = np.fromfile(path, dtype=np.uint8)
+                    img = cv2.imdecode(raw_data, cv2.IMREAD_COLOR)
+                    file_name ="0" + str(int(file_name[0])-1)
+                    MainWindow.customImg.update({file_name: img})
             MainWindow.key = file_name
             self.refeshImage()
             self.set_layout()
-        except:
-            pass
     def Save(self):
             if self.dir:
                 pass
@@ -206,7 +211,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.xValue.setText(str(self.x1))
                 self.yValue.setText(str(self.y2))
                 self.pixelValue.setText(str(self.x2-self.x1))
-            image = cv2.resize(image, None, fx=2.1, fy=2.1, interpolation=cv2.INTER_AREA)
+            image = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_AREA)
             self.imgWidget.set_image(image)
             self.nameLabel.setText(MainWindow.key)
         except KeyError:
@@ -221,7 +226,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             label = ClickableLabel(key)
             label.setToolTip(key)
             label.clicked.connect(self.imgLabel_clicked)
-            img = cv2.resize(MainWindow.customImg[key], None, fx=0.3, fy=0.3, interpolation=cv2.INTER_AREA)
+            img = cv2.resize(MainWindow.customImg[key], None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA)
             img = QPixmap.fromImage(self.cv2_to_qimage(img))
             label.setPixmap(img)
             layout.addWidget(label)
