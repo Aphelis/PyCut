@@ -33,8 +33,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
-        rect_height = screen_geometry.height()
-        if rect_height > 700:
+        self.rect_height = screen_geometry.height()
+        if self.rect_height > 700:
             uic.loadUi("uic/mainwindow_large.ui", self)
         else:
             uic.loadUi("uic/mainwindow_small.ui", self)
@@ -154,8 +154,6 @@ class MainWindow(QMainWindow):
                                                             BMP Images (*.bmp);;TIFF Images (*.tiff);;
                                                             WebP Images (*.webp);;Icon Images (*.ico)
                                                             """)[0]
-            print(bool(paths))
-            print(paths)
             if paths: #Check paths is not None
                 self.clear()
             for path in paths:
@@ -211,7 +209,10 @@ class MainWindow(QMainWindow):
                 self.xValue.setText(str(self.x1))
                 self.yValue.setText(str(self.y2))
                 self.pixelValue.setText(str(self.x2-self.x1))
-            image = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_AREA)
+            if self.rect_height > 700:
+                image = cv2.resize(image, None, fx=2.1, fy=2.1, interpolation=cv2.INTER_AREA)
+            else:
+                image = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_AREA)
             self.imgWidget.set_image(image)
             self.nameLabel.setText(MainWindow.key)
         except KeyError:
@@ -261,7 +262,6 @@ class MainWindow(QMainWindow):
             MainWindow.key = ""
         # self.findImage_check = False
         self.chooseButton_checked = False
-        self.menuSave.setEnabled(False)
     def chooseButton_clicked(self):
         buttonText = ["Enlarge ", "Shrink"]
         self.current_layout_index = 1 - self.current_layout_index  # Toggle between 0 and 1
